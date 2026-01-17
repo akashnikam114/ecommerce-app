@@ -1,20 +1,121 @@
-# LaraCommerce - Admin & Cart API Task
+# 🛒 E-Commerce App – Admin & Cart API (Laravel 10)
 
-This is a Laravel 10/11 based practical task featuring a secure Admin Product Management panel and a Customer Cart API using Laravel Sanctum.
+This project is a **Laravel 10** based practical task that includes a secure **Admin Product Management Panel** and a **Customer Cart API** powered by **Laravel Sanctum**.
 
-## 📌 Submission Checklist
-- [x] Admin Authentication & Middleware
-- [x] Product CRUD with AJAX Search & Toggle
-- [x] Sanctum API (Register/Login/Logout)
-- [x] Cart Module (Add, Update, Delete, List)
-- [x] Checkout API with Stock Validation & Transactions
-- [x] Feature Tests (Duplicate Merging & Stock Integrity)
+---
+
+## ✅ Features & Checklist
+
+* [x] Admin Authentication & Middleware
+* [x] Product CRUD (Create, Read, Update, Delete)
+* [x] AJAX Product Search
+* [x] Product Status Toggle (Active / Inactive)
+* [x] Sanctum API Authentication (Register / Login / Logout)
+* [x] Cart Module (Add, Update, Delete, List)
+* [x] Checkout API with Stock Validation & Database Transactions
 
 ---
 
 ## 🛠️ Installation & Setup
 
-1. **Clone the Project**
-   ```bash
-   git clone <your-repo-link>
-   cd LaraCommerce-Task
+Follow the steps below to run the project on your local machine.
+
+---
+
+## 1️⃣ Clone the Repository
+
+```bash
+git clone https://github.com/akashnikam114/ecommerce-app.git
+cd ecommerce-app
+```
+
+---
+
+## 2️⃣ Environment Configuration
+
+Create the environment file:
+
+```bash
+cp .env.example .env
+```
+
+### Database Setup
+
+Create a MySQL database named:
+
+```text
+ecommerce_db
+```
+
+Update the following values in your `.env` file:
+
+```env
+DB_DATABASE=ecommerce_db
+DB_USERNAME=your_db_username
+DB_PASSWORD=your_db_password
+```
+
+---
+
+## 3️⃣ Install Dependencies
+
+### PHP Dependencies
+
+```bash
+composer update
+```
+
+### Frontend Assets (Vite)
+
+```bash
+npm install
+npm run dev
+```
+
+---
+
+## 4️⃣ Application Key, Migration & Seeding
+
+Run the following commands:
+
+```bash
+php artisan key:generate
+php artisan migrate:fresh --seed
+```
+
+---
+
+## 5️⃣ Run the Application
+
+```bash
+php artisan serve
+```
+
+The application will be available at:
+
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+## 🔐 Admin Login Details
+
+Use the following credentials to access the Admin Panel:
+
+* **Login URL:** [http://127.0.0.1:8000/login]
+* **Email:** [admin@example.com]
+* **Password:** Admin@123
+
+---
+
+## 📦 API Authentication (Sanctum)
+
+All customer APIs (Cart & Checkout) are protected using **Laravel Sanctum**.
+
+* Register API
+* Login API
+* Logout API
+* Authenticated Cart APIs
+
+---
