@@ -10,4 +10,5 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'sku', 'price', 'stock', 'is_active'];
+    protected $hidden = ['created_at', 'updated_at'];
 }

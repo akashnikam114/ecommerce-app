@@ -11,31 +11,25 @@ use Illuminate\Support\Facades\DB;
 
 class CartController extends Controller
 {
-    /**
-     * GET /api/cart
-     * Returns all items in user's cart plus the grand total.
-     */
     public function index()
     {
-        // Eager load product to avoid N+1 issues
         $cart = Cart::with('items.product')->firstOrCreate(['user_id' => auth()->id()]);
 
         $items = $cart->items;
-        $total = $items->sum(fn($item) => $item->qty * $item->price_at_time);
+        $total = $cart->items->sum(function($item) {
+            return $item->qty * $item->price_at_time;
+        });
 
         return response()->json([
-            'status' => 'success',
+            'status' => true,
+            'message' => 'Success',
             'data' => [
                 'items' => $items,
-                'cart_total' => round($total, 2)
+                'cart_total' => (string) number_format($total, 2, '.', '')
             ]
         ], 200);
     }
 
-    /**
-     * POST /api/cart/items
-     * Adds an item to the cart or increments quantity if it exists.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -45,14 +39,11 @@ class CartController extends Controller
 
         $product = Product::findOrFail($request->product_id);
 
-        // Check stock before adding
         if ($product->stock < $request->qty) {
-            return response()->json(['message' => 'Insufficient stock available.'], 422);
+            return response()->json(['status' => false, 'message' => 'Insufficient stock available.'], 422);
         }
 
         $cart = Cart::firstOrCreate(['user_id' => auth()->id()]);
-
-        // Logic to merge duplicates: update existing or create new
         $cartItem = $cart->items()->where('product_id', $product->id)->first();
 
         if ($cartItem) {
@@ -61,86 +52,82 @@ class CartController extends Controller
             $cart->items()->create([
                 'product_id' => $product->id,
                 'qty' => $request->qty,
-                'price_at_time' => $product->price // Capture price at the moment of adding
+                'price_at_time' => $product->price
             ]);
         }
 
-        return response()->json(['message' => 'Item added to cart successfully.'], 201);
+        return response()->json(['status' => true, 'message' => 'Item added to cart successfully.'], 201);
     }
 
-    /**
-     * PATCH /api/cart/items/{product_id}
-     * Updates the quantity of a specific item in the cart.
-     */
     public function update(Request $request, $productId)
     {
-        $request->validate(['qty' => 'required|integer|min:1']);
+        $request->validate([
+            'qty' => 'required|integer|min:1'
+        ]);
 
         $cart = Cart::where('user_id', auth()->id())->firstOrFail();
-        $item = $cart->items()->where('product_id', $productId)->firstOrFail();
+        if (!$cart) {
+            return response()->json(['status' => false, 'message' => 'Cart not found'], 404);
+        }
 
-        // Validate stock for the new quantity
+        $item = $cart->items()->where('product_id', $productId)->firstOrFail();
+        if (!$item) {
+            return response()->json(['status' => false, 'message' => 'This product does not exist in your cart.'], 404);
+        }
+
         if ($item->product->stock < $request->qty) {
-            return response()->json(['message' => 'Requested quantity exceeds stock.'], 422);
+            return response()->json(['status' => false, 'message' => 'Requested quantity exceeds stock.'], 422);
         }
 
         $item->update(['qty' => $request->qty]);
 
-        return response()->json(['message' => 'Cart quantity updated.']);
+        return response()->json(['status' => true, 'message' => 'Cart quantity updated.']);
     }
 
-    /**
-     * DELETE /api/cart/items/{product_id}
-     * Removes a specific product from the cart.
-     */
     public function destroy($productId)
     {
         $cart = Cart::where('user_id', auth()->id())->firstOrFail();
         $deleted = $cart->items()->where('product_id', $productId)->delete();
 
         if (!$deleted) {
-            return response()->json(['message' => 'Item not found in cart.'], 404);
+            return response()->json(['status' => false, 'message' => 'Item not found in cart.'], 404);
         }
 
-        return response()->json(['message' => 'Item removed from cart.']);
+        return response()->json(['status' => true, 'message' => 'Item removed from cart.']);
     }
 
     public function checkout()
     {
         return DB::transaction(function () {
-            // 1. Get user cart with items and product details
             $cart = Cart::where('user_id', auth()->id())->with('items.product')->first();
 
-            // Check if cart exists and has items
             if (!$cart || $cart->items->isEmpty()) {
                 return response()->json([
-                    'status' => 'error',
+                    'status' => false,
                     'message' => 'Your cart is empty.'
                 ], 400);
             }
 
-            // 2. Main Filter: Validate Stock for every item in the cart
             foreach ($cart->items as $item) {
                 if ($item->qty > $item->product->stock) {
                     return response()->json([
-                        'status' => 'error',
+                        'status' => false,
                         'message' => "Insufficient stock for: {$item->product->name}. Only {$item->product->stock} remaining.",
-                        'product_id' => $item->product_id
+                        'data' => [
+                            'product_id' => $item->product_id
+                        ]
                     ], 422);
                 }
             }
 
-            // 3. Deduct Stock and Log Price
             foreach ($cart->items as $item) {
-                // Use decrement to ensure atomic database update
                 $item->product->decrement('stock', $item->qty);
             }
 
-            // 4. Clear the Cart items
             $cart->items()->delete();
 
             return response()->json([
-                'status' => 'success',
+                'status' => true,
                 'message' => 'Checkout successful. Thank you for your order!'
             ], 200);
         });

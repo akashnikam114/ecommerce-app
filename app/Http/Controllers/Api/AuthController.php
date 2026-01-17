@@ -10,7 +10,8 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function register(Request $request) {
+    public function register(Request $request)
+    {
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|unique:users',
@@ -25,12 +26,16 @@ class AuthController extends Controller
         ]);
 
         return response()->json([
+            'status' => true,
             'message' => 'User registered successfully',
-            'token' => $user->createToken('auth_token')->plainTextToken
+            'data' => [
+                'token' => $user->createToken('auth_token')->plainTextToken
+            ]
         ], 201);
     }
 
-    public function login(Request $request) {
+    public function login(Request $request)
+    {
         $request->validate([
             'email' => 'required|email',
             'password' => 'required',
@@ -39,17 +44,26 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            return response()->json(['status' => false, 'message' => 'Invalid credentials'], 401);
         }
 
         return response()->json([
-            'token' => $user->createToken('auth_token')->plainTextToken,
-            'user' => $user
+            'status' => true,
+            'message' => 'Logged in successfully',
+            'data' => [
+                'token' => $user->createToken('auth_token')->plainTextToken,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ],
+            ]
         ]);
     }
 
-    public function logout(Request $request) {
+    public function logout(Request $request)
+    {
         $request->user()->currentAccessToken()->delete();
-        return response()->json(['message' => 'Logged out successfully']);
+        return response()->json(['status' => true, 'message' => 'Logged out successfully']);
     }
 }
