@@ -23,9 +23,9 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::resource('products', ProductController::class);
-    Route::patch('products/{product}/toggle', [ProductController::class, 'toggleStatus'])->name('products.toggle');
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('/products', ProductController::class);
+    Route::patch('/products/{product}/toggle', [ProductController::class, 'toggleStatus'])->name('products.toggle');
 });
 
 Route::middleware('auth')->group(function () {

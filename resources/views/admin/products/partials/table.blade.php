@@ -15,7 +15,7 @@
             <tr class="bg-white hover:bg-gray-50 transition duration-150">
                 <td class="px-6 py-4 font-bold text-gray-900">{{ $product->name }}</td>
                 <td class="px-6 py-4 font-mono text-gray-600">{{ $product->sku }}</td>
-                <td class="px-6 py-4 font-bold text-green-700">${{ number_format($product->price, 2) }}</td>
+                <td class="px-6 py-4 font-bold text-green-700">₹{{ number_format($product->price, 2) }}</td>
                 <td class="px-6 py-4">{{ $product->stock }}</td>
                 <td class="px-6 py-4 text-center">
                     <button onclick="toggleStatus({{ $product->id }})"

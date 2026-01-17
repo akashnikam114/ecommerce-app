@@ -51,6 +51,6 @@ class ProductController extends Controller
     {
         $product->is_active = !$product->is_active;
         $product->save();
-        return response()->json(['success' => true]);
+        return response()->json(['success' => true, 'is_active' => (bool) $product->is_active]);
     }
 }

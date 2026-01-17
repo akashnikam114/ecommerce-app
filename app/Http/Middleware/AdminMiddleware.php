@@ -19,6 +19,6 @@ class AdminMiddleware
             return $next($request);
         }
 
-        return redirect('dashboard')->with('error', 'You do not have admin access.');
+        abort(403, 'You do not have admin access.');
     }
 }

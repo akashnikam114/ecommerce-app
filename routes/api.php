@@ -3,7 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
 
-// Public Routes
+// Auth Routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -11,6 +11,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    // Cart Routes
     Route::get('/cart', [CartController::class, 'index']);
     Route::post('/cart/items', [CartController::class, 'store']);
     Route::patch('/cart/items/{product_id}', [CartController::class, 'update']);
